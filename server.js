@@ -51,7 +51,7 @@ app.use('/uploads', express.static(uploadsDir));
 
 
 // --- MongoDB Connection ---
-mongoose.connect(process.env.MONGODB_URI) // The connection string is all that's needed
+mongoose.connect(process.env.MONGO_URI) // The connection string is all that's needed
 .then(() => console.log('MongoDB connected successfully!'))
 .catch(err => {
     console.error('MongoDB connection error:', err);
@@ -325,5 +325,5 @@ app.put('/api/found-items/:id', authMiddleware, upload.array('images', 5), async
 // --- Server Start ---
 app.listen(PORT, () => {
     console.log(`Backend server running on port ${PORT}`);
-    console.log(`Attempting to connect to MongoDB using: ${process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 30) + '...' : ' (URI not set)'}`);
+    console.log(`Attempting to connect to MongoDB using: ${process.env.MONGO_URI ? process.env.MONGO_URI.substring(0, 30) + '...' : ' (URI not set)'}`);
 });
