@@ -1,20 +1,24 @@
-// server.js
+require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const connectDB = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-// Middleware for JSON parsing
+app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
+// Connect DB
 connectDB(process.env.MONGO_URI);
 
-// Test Route
-app.get("/api/test", (req, res) => {
-  res.json({ message: "✅ Server & Database are working fine!" });
+// API routes
+app.use("/api/auth", authRoutes);
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Backend is running");
 });
 
-// Server Listen
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running at ${PORT}`));
