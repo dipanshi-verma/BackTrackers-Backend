@@ -54,6 +54,41 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+// POST /api/auth/admin-login
+// Requires username + password + adminCode (set in .env as ADMIN_SECRET_CODE)
+exports.adminLogin = async (req, res) => {
+  const { username, password, adminCode } = req.body;
+  try {
+    // 1. Check secret code first — fail fast, don't reveal whether user exists
+    if (!adminCode || adminCode !== process.env.ADMIN_SECRET_CODE)
+      return res.status(403).json({ message: 'Invalid admin code' });
+
+    // 2. Find user
+    const user = await User.findOne({ username });
+    if (!user)
+      return res.status(400).json({ message: 'Invalid credentials' });
+
+    // 3. Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(400).json({ message: 'Invalid credentials' });
+
+    // 4. Must actually be an admin
+    if (user.role !== 'admin')
+      return res.status(403).json({ message: 'Access denied: not an admin account' });
+
+    const token = generateToken(user._id, user.role);
+    res.status(200).json({
+      message: 'Admin login successful',
+      token,
+      user: { id: user._id, username: user.username, role: user.role },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error during admin login' });
+  }
+};
+
 // GET /api/auth/me  (used to refresh user info from token)
 exports.getMe = async (req, res) => {
   try {

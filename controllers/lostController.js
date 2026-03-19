@@ -74,8 +74,8 @@ async function updateLost(req, res, next) {
     const item = await LostItem.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'Not found' });
 
-    // ✅ ownership check
-    if (req.user.role !== 'admin' && String(item.reportedBy) !== String(req.user.id))
+    const isOwner = item.reportedBy && String(item.reportedBy) === String(req.user.id);
+    if (req.user.role !== 'admin' && !isOwner)
       return res.status(403).json({ message: 'Not authorised to edit this item' });
 
     const updates = req.body;
@@ -101,8 +101,8 @@ async function deleteLost(req, res, next) {
     const item = await LostItem.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'Not found' });
 
-    // ✅ ownership check
-    if (req.user.role !== 'admin' && String(item.reportedBy) !== String(req.user.id))
+    const isOwner = item.reportedBy && String(item.reportedBy) === String(req.user.id);
+    if (req.user.role !== 'admin' && !isOwner)
       return res.status(403).json({ message: 'Not authorised to delete this item' });
 
     await item.deleteOne();
@@ -118,7 +118,8 @@ async function markAsReturned(req, res, next) {
     const item = await LostItem.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'Not found' });
 
-    if (req.user.role !== 'admin' && String(item.reportedBy) !== String(req.user.id))
+    const isOwner = item.reportedBy && String(item.reportedBy) === String(req.user.id);
+    if (req.user.role !== 'admin' && !isOwner)
       return res.status(403).json({ message: 'Not authorised' });
 
     item.status = 'returned';
